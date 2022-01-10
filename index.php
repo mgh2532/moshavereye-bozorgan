@@ -1,8 +1,25 @@
 <?php
-$question = 'این یک پرسش نمونه است';
-$msg = 'این یک پاسخ نمونه است';
-$en_name = 'hafez';
-$fa_name = 'حافظ';
+$j = file_get_contents('people.json');
+$peoples = json_decode($j,true);
+$messages = explode("\n", file_get_contents('messages.txt'));
+$msg = "سوال خود را بپرس!"; 
+$en_name = array_rand($peoples);
+
+if(!empty($_POST["person"])){
+	$en_name = $_POST["person"];
+}
+$fa_name = $peoples[$en_name];
+$question = "";
+if(!empty($_POST["question"])){
+    $question = $_POST["question"];
+}
+if(isset($_POST["question"])){
+    $msg = $messages[intval(hash('gost', $question.$en_name))%16]; 
+    $qlen = strlen($question);
+    if(substr($question, 0, 6) != "آیا" || (substr($question, $qlen-2, $qlen) != "؟" && substr($question, $qlen-1, $qlen) != "?")){
+        $msg="سوال درستی پرسیده نشده";
+    } 
+}	
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -36,11 +53,14 @@ $fa_name = 'حافظ';
             را از
             <select name="person">
                 <?php
-                /*
-                 * Loop over people data and
-                 * enter data inside `option` tag.
-                 * E.g., <option value="hafez">حافظ</option>
-                 */
+                    $j = file_get_contents('people.json');
+                    $peoples = json_decode($j,true);
+                    foreach($peoples as $id => $fname) { 
+                        if($id==$en_name) 
+                            echo '<option value="' , $id , '" selected="selected">' , $fname , '</option>';
+                        else 
+                            echo '<option value="' , $id , '">' , $fname , '</option>';
+                    }
                 ?>
             </select>
             <input type="submit" value="بپرس"/>
